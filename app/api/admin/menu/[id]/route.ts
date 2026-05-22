@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import * as path from "path";
-
-import { writeFile } from "fs/promises";
+import { put } from "@vercel/blob";
 
 export async function PUT(
   req: NextRequest,
@@ -34,20 +32,15 @@ export async function PUT(
 
     // JIKA ADA IMAGE BARU
     if (image && image instanceof File) {
-      const bytes = await image.arrayBuffer();
-
-      const buffer = Buffer.from(bytes);
-
       const ext = image.name.split(".").pop();
+      const fileName = `menu/${Date.now()}.${ext}`;
 
-      const fileName = `${Date.now()}.${ext}`;
+      const blob = await put(fileName, image, {
+        access: "public",
+        contentType: image.type,
+      });
 
-      const uploadPath = path.join(process.cwd(), "public/uploads", fileName);
-
-      await writeFile(uploadPath, buffer);
-
-      // UPDATE IMAGE
-      updateData.image = `/uploads/${fileName}`;
+      updateData.image = blob.url;
     }
 
     // UPDATE MENU
