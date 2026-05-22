@@ -31,7 +31,7 @@ export async function GET() {
 
   const data = tables.map((table) => ({
     ...table,
-    qrUrl: `http://localhost:3000/menu?table=${table.number}`,
+    qrUrl: `https://qr-ordering-table-zmx.vercel.app/menu?table=${table.number}`,
   }));
 
   return Response.json({ data });
