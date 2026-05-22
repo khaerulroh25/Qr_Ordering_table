@@ -2,10 +2,7 @@ import { NextRequest } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
-import * as path from "path";
-
-import { writeFile } from "fs/promises";
-
+import { put } from "@vercel/blob";
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -62,24 +59,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // BUFFER
-      const bytes = await image.arrayBuffer();
-
-      const buffer = Buffer.from(bytes);
-
-      // EXTENSION
       const ext = image.name.split(".").pop();
+      const fileName = `menu/${Date.now()}.${ext}`;
 
-      // FILE NAME
-      const fileName = `${Date.now()}.${ext}`;
+      const blob = await put(fileName, image, {
+        access: "public",
+        contentType: image.type,
+      });
 
-      // PATH
-      const uploadPath = path.join(process.cwd(), "public/uploads", fileName);
-
-      // SAVE FILE
-      await writeFile(uploadPath, buffer);
-
-      imagePath = `/uploads/${fileName}`;
+      imagePath = blob.url;
     }
 
     // CREATE MENU
